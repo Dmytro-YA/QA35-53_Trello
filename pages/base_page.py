@@ -1,5 +1,7 @@
 
 import time
+
+from selenium.common import TimeoutException
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.wait import WebDriverWait
@@ -10,21 +12,27 @@ locator = tuple[str, str] #(By.ID, "email")
 class BasePage:
     def __init__(self, driver: WebDriver):
         self.driver = driver
-        self.wait = WebDriverWait(driver, 10)
+        self.wait = WebDriverWait(driver, 3)
 
     def find(self, locator: locator) -> WebElement:
         return self.wait.until(EC.presence_of_element_located(locator))
 
     def click(self, locator: locator) -> None:
         self.wait.until(EC.element_to_be_clickable(locator)).click()
-        time.sleep(2)
+        time.sleep(1)
 
     def fill(self, locator: locator, text: str) -> None:
         self.find(locator).send_keys(text)
-        time.sleep(2)
+        time.sleep(1)
 
     def get_text(self, locator: locator) -> str:
         return self.find(locator).text
 
     def scroll_down(self, pixels=500):
         ActionChains(self.driver).scroll_by_amount(0, pixels).perform()
+
+    def is_url_contains(self, text: str) -> bool:
+        try:
+            return self.wait.until(EC.url_contains(text))
+        except TimeoutException:
+            return False
